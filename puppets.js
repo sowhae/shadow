@@ -1,6 +1,6 @@
 /**
  * Shadow Puppet Renderer
- * Defines and renders different puppet shapes based on hand gestures
+ * Pure silhouette shadows that look realistic, not clipart
  */
 
 class Puppet {
@@ -13,21 +13,9 @@ class Puppet {
         this.targetX = x;
         this.targetY = y;
         this.targetScale = scale;
-        this.color = this.getColorForType(type);
         this.opacity = 0;
         this.targetOpacity = 1;
         this.handedness = null; // 'Left' or 'Right'
-    }
-
-    getColorForType(type) {
-        const colors = {
-            'dog': { shadow: 'rgba(40, 40, 60, 0.9)', glow: 'rgba(100, 100, 200, 0.3)' },
-            'bird': { shadow: 'rgba(60, 40, 40, 0.9)', glow: 'rgba(200, 100, 100, 0.3)' },
-            'rabbit': { shadow: 'rgba(40, 60, 40, 0.9)', glow: 'rgba(100, 200, 100, 0.3)' },
-            'butterfly': { shadow: 'rgba(60, 40, 60, 0.9)', glow: 'rgba(200, 100, 200, 0.3)' },
-            'elephant': { shadow: 'rgba(50, 50, 50, 0.9)', glow: 'rgba(150, 150, 200, 0.3)' }
-        };
-        return colors[type] || colors['dog'];
     }
 
     update() {
@@ -46,9 +34,10 @@ class Puppet {
         ctx.scale(this.scale, this.scale);
         ctx.globalAlpha = this.opacity;
 
-        // Draw glow effect
-        ctx.shadowColor = this.color.glow;
-        ctx.shadowBlur = 30;
+        // Pure black shadow - no glow on the puppet itself
+        ctx.fillStyle = '#000';
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
 
         // Draw the puppet shape
         switch (this.type) {
@@ -73,247 +62,194 @@ class Puppet {
     }
 
     drawDog(ctx) {
-        ctx.fillStyle = this.color.shadow;
-
-        // Head
+        // Simplified dog silhouette (like a fist with thumb up)
         ctx.beginPath();
-        ctx.ellipse(0, 0, 80, 100, 0, 0, Math.PI * 2);
+
+        // Main body (fist)
+        ctx.ellipse(0, 0, 70, 90, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Snout
+        // Snout projection
         ctx.beginPath();
-        ctx.ellipse(0, 40, 50, 60, 0, 0, Math.PI * 2);
+        ctx.moveTo(40, -20);
+        ctx.quadraticCurveTo(80, 0, 80, 30);
+        ctx.quadraticCurveTo(70, 50, 50, 40);
+        ctx.lineTo(40, 20);
+        ctx.closePath();
         ctx.fill();
 
         // Ears
         ctx.beginPath();
-        ctx.ellipse(-70, -40, 40, 70, -0.3, 0, Math.PI * 2);
+        ctx.ellipse(-60, -60, 30, 60, -0.4, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.beginPath();
-        ctx.ellipse(70, -40, 40, 70, 0.3, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Eyes (lighter)
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-        ctx.beginPath();
-        ctx.arc(-30, -20, 8, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(30, -20, 8, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Nose
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.beginPath();
-        ctx.arc(0, 50, 12, 0, Math.PI * 2);
+        ctx.ellipse(20, -80, 35, 50, 0.3, 0, Math.PI * 2);
         ctx.fill();
     }
 
     drawBird(ctx) {
-        ctx.fillStyle = this.color.shadow;
+        // Bird silhouette (open hand)
+        ctx.beginPath();
 
         // Body
-        ctx.beginPath();
-        ctx.ellipse(0, 0, 60, 80, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 20, 50, 60, 0.2, 0, Math.PI * 2);
         ctx.fill();
 
-        // Head
+        // Head and neck
         ctx.beginPath();
-        ctx.ellipse(0, -60, 50, 50, 0, 0, Math.PI * 2);
+        ctx.ellipse(-10, -30, 40, 40, 0, 0, Math.PI * 2);
         ctx.fill();
 
         // Beak
         ctx.beginPath();
-        ctx.moveTo(30, -60);
-        ctx.lineTo(80, -60);
-        ctx.lineTo(30, -40);
+        ctx.moveTo(20, -30);
+        ctx.lineTo(60, -25);
+        ctx.lineTo(20, -20);
         ctx.closePath();
         ctx.fill();
 
-        // Wings
+        // Left wing (spread)
         ctx.beginPath();
-        ctx.ellipse(-80, 0, 60, 30, -0.5, 0, Math.PI * 2);
+        ctx.moveTo(-30, 10);
+        ctx.quadraticCurveTo(-80, -20, -100, -10);
+        ctx.quadraticCurveTo(-110, 0, -100, 20);
+        ctx.quadraticCurveTo(-80, 40, -50, 50);
+        ctx.lineTo(-30, 30);
+        ctx.closePath();
         ctx.fill();
 
+        // Right wing (spread)
         ctx.beginPath();
-        ctx.ellipse(80, 0, 60, 30, 0.5, 0, Math.PI * 2);
+        ctx.moveTo(30, 10);
+        ctx.quadraticCurveTo(70, -30, 90, -30);
+        ctx.quadraticCurveTo(100, -20, 100, 0);
+        ctx.quadraticCurveTo(90, 30, 60, 50);
+        ctx.lineTo(30, 40);
+        ctx.closePath();
         ctx.fill();
 
-        // Eye
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        // Tail
         ctx.beginPath();
-        ctx.arc(15, -70, 6, 0, Math.PI * 2);
+        ctx.moveTo(-20, 60);
+        ctx.lineTo(-10, 100);
+        ctx.lineTo(10, 100);
+        ctx.lineTo(20, 60);
+        ctx.closePath();
         ctx.fill();
-
-        // Wing details
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
-        ctx.lineWidth = 2;
-        for (let i = 0; i < 3; i++) {
-            ctx.beginPath();
-            ctx.moveTo(-60 - i * 15, -10);
-            ctx.lineTo(-60 - i * 15, 20);
-            ctx.stroke();
-        }
     }
 
     drawRabbit(ctx) {
-        ctx.fillStyle = this.color.shadow;
+        // Rabbit silhouette (pinch gesture)
+        ctx.beginPath();
 
         // Head
-        ctx.beginPath();
-        ctx.ellipse(0, 0, 70, 80, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 10, 60, 70, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Long ears
+        // Long ear 1
         ctx.beginPath();
-        ctx.ellipse(-30, -100, 25, 80, -0.2, 0, Math.PI * 2);
+        ctx.ellipse(-25, -80, 20, 70, -0.1, 0, Math.PI * 2);
         ctx.fill();
 
+        // Long ear 2
         ctx.beginPath();
-        ctx.ellipse(30, -100, 25, 80, 0.2, 0, Math.PI * 2);
+        ctx.ellipse(25, -80, 20, 70, 0.1, 0, Math.PI * 2);
         ctx.fill();
 
-        // Inner ears (lighter)
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        // Cheek puffs
         ctx.beginPath();
-        ctx.ellipse(-30, -100, 12, 50, -0.2, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.ellipse(30, -100, 12, 50, 0.2, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Eyes
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-        ctx.beginPath();
-        ctx.arc(-25, -10, 8, 0, Math.PI * 2);
+        ctx.ellipse(-45, 20, 25, 30, 0, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.beginPath();
-        ctx.arc(25, -10, 8, 0, Math.PI * 2);
+        ctx.ellipse(45, 20, 25, 30, 0, 0, Math.PI * 2);
         ctx.fill();
-
-        // Nose
-        ctx.fillStyle = this.color.shadow;
-        ctx.beginPath();
-        ctx.moveTo(0, 20);
-        ctx.lineTo(-8, 30);
-        ctx.lineTo(8, 30);
-        ctx.closePath();
-        ctx.fill();
-
-        // Whiskers
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(-40, 20);
-        ctx.lineTo(-80, 15);
-        ctx.moveTo(-40, 30);
-        ctx.lineTo(-80, 35);
-        ctx.moveTo(40, 20);
-        ctx.lineTo(80, 15);
-        ctx.moveTo(40, 30);
-        ctx.lineTo(80, 35);
-        ctx.stroke();
     }
 
     drawButterfly(ctx) {
-        ctx.fillStyle = this.color.shadow;
+        // Butterfly silhouette (two hands together)
+        ctx.beginPath();
 
         // Body
-        ctx.beginPath();
-        ctx.ellipse(0, 0, 15, 80, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 0, 12, 70, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Upper wings
+        // Head
         ctx.beginPath();
-        ctx.ellipse(-60, -40, 70, 60, -0.3, 0, Math.PI * 2);
+        ctx.arc(0, -75, 15, 0, Math.PI * 2);
         ctx.fill();
 
+        // Upper left wing
         ctx.beginPath();
-        ctx.ellipse(60, -40, 70, 60, 0.3, 0, Math.PI * 2);
+        ctx.moveTo(-10, -40);
+        ctx.bezierCurveTo(-40, -70, -80, -80, -90, -50);
+        ctx.bezierCurveTo(-95, -30, -85, -10, -60, -5);
+        ctx.bezierCurveTo(-40, -10, -20, -20, -10, -30);
+        ctx.closePath();
         ctx.fill();
 
-        // Lower wings
+        // Upper right wing
         ctx.beginPath();
-        ctx.ellipse(-50, 30, 50, 50, 0.2, 0, Math.PI * 2);
+        ctx.moveTo(10, -40);
+        ctx.bezierCurveTo(40, -70, 80, -80, 90, -50);
+        ctx.bezierCurveTo(95, -30, 85, -10, 60, -5);
+        ctx.bezierCurveTo(40, -10, 20, -20, 10, -30);
+        ctx.closePath();
         ctx.fill();
 
+        // Lower left wing
         ctx.beginPath();
-        ctx.ellipse(50, 30, 50, 50, -0.2, 0, Math.PI * 2);
+        ctx.moveTo(-10, 20);
+        ctx.bezierCurveTo(-35, 30, -60, 45, -70, 60);
+        ctx.bezierCurveTo(-70, 70, -60, 75, -45, 70);
+        ctx.bezierCurveTo(-30, 60, -15, 40, -10, 30);
+        ctx.closePath();
         ctx.fill();
 
-        // Wing patterns
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+        // Lower right wing
         ctx.beginPath();
-        ctx.arc(-60, -40, 20, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(60, -40, 20, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Antennae
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.moveTo(0, -80);
-        ctx.quadraticCurveTo(-20, -100, -25, -110);
-        ctx.moveTo(0, -80);
-        ctx.quadraticCurveTo(20, -100, 25, -110);
-        ctx.stroke();
-
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-        ctx.beginPath();
-        ctx.arc(-25, -110, 5, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(25, -110, 5, 0, Math.PI * 2);
+        ctx.moveTo(10, 20);
+        ctx.bezierCurveTo(35, 30, 60, 45, 70, 60);
+        ctx.bezierCurveTo(70, 70, 60, 75, 45, 70);
+        ctx.bezierCurveTo(30, 60, 15, 40, 10, 30);
+        ctx.closePath();
         ctx.fill();
     }
 
     drawElephant(ctx) {
-        ctx.fillStyle = this.color.shadow;
-
-        // Head
+        // Elephant silhouette (two fists together)
         ctx.beginPath();
-        ctx.ellipse(0, -20, 90, 70, 0, 0, Math.PI * 2);
+
+        // Large head/body
+        ctx.ellipse(0, -10, 100, 80, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Trunk
+        // Trunk (curved)
         ctx.beginPath();
-        ctx.moveTo(50, 20);
-        ctx.quadraticCurveTo(80, 60, 70, 100);
-        ctx.quadraticCurveTo(65, 110, 60, 100);
-        ctx.quadraticCurveTo(70, 60, 40, 20);
+        ctx.moveTo(60, 30);
+        ctx.bezierCurveTo(80, 60, 75, 100, 60, 130);
+        ctx.bezierCurveTo(50, 135, 40, 130, 45, 120);
+        ctx.bezierCurveTo(55, 95, 55, 60, 50, 30);
         ctx.closePath();
         ctx.fill();
 
-        // Ears
+        // Large ear left
         ctx.beginPath();
-        ctx.ellipse(-80, -20, 60, 80, -0.3, 0, Math.PI * 2);
+        ctx.ellipse(-80, -10, 50, 70, -0.2, 0, Math.PI * 2);
         ctx.fill();
 
+        // Large ear right
         ctx.beginPath();
-        ctx.ellipse(80, -20, 60, 80, 0.3, 0, Math.PI * 2);
+        ctx.ellipse(80, -10, 50, 70, 0.2, 0, Math.PI * 2);
         ctx.fill();
 
-        // Eye
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        // Tusks hint (subtle)
         ctx.beginPath();
-        ctx.arc(-20, -30, 8, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Tusk
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-        ctx.beginPath();
-        ctx.moveTo(30, 10);
-        ctx.lineTo(40, 50);
-        ctx.lineTo(35, 50);
-        ctx.lineTo(25, 10);
+        ctx.moveTo(35, 20);
+        ctx.lineTo(50, 55);
+        ctx.lineTo(45, 55);
+        ctx.lineTo(30, 25);
         ctx.closePath();
         ctx.fill();
     }

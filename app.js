@@ -27,10 +27,6 @@ class ShadowPuppetApp {
         this.hands = new Map(); // handedness -> landmarks
         this.lastHandUpdate = new Map();
 
-        // Lighting effects
-        this.lightingHue = 0;
-        this.lightingIntensity = 0.5;
-
         // Animation
         this.isRunning = false;
 
@@ -240,41 +236,44 @@ class ShadowPuppetApp {
         this.puppetManager.update();
         this.puppetManager.draw(this.ctx);
 
-        // Update lighting
-        this.updateLighting();
-
         requestAnimationFrame(() => this.animate());
     }
 
     drawBackground() {
-        // Animated gradient background
-        this.lightingHue += 0.2;
-        if (this.lightingHue > 360) this.lightingHue = 0;
+        // Dark background (black)
+        this.ctx.fillStyle = '#000';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        const gradient = this.ctx.createLinearGradient(
-            0, 0,
-            this.canvas.width,
-            this.canvas.height
+        // Draw glowing light source (like a moon or spotlight)
+        const lightX = this.canvas.width / 2;
+        const lightY = this.canvas.height / 2;
+        const lightRadius = Math.min(this.canvas.width, this.canvas.height) * 0.35;
+
+        // Create radial gradient for the glow effect
+        const gradient = this.ctx.createRadialGradient(
+            lightX, lightY, lightRadius * 0.7,
+            lightX, lightY, lightRadius * 1.3
         );
 
-        const color1 = this.hslToRgb(this.lightingHue, 70, 50);
-        const color2 = this.hslToRgb((this.lightingHue + 60) % 360, 70, 40);
-
-        gradient.addColorStop(0, `rgb(${color1[0]}, ${color1[1]}, ${color1[2]})`);
-        gradient.addColorStop(1, `rgb(${color2[0]}, ${color2[1]}, ${color2[2]})`);
+        // Warm, soft glow (like the image)
+        gradient.addColorStop(0, 'rgba(255, 248, 230, 0.95)'); // Warm white center
+        gradient.addColorStop(0.4, 'rgba(255, 240, 200, 0.6)'); // Soft yellow-white
+        gradient.addColorStop(0.7, 'rgba(255, 220, 150, 0.3)'); // Fading warm glow
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)'); // Fade to black
 
         this.ctx.fillStyle = gradient;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
     drawHandOutlines() {
-        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-        this.ctx.lineWidth = 2;
+        // Very subtle hand outlines - barely visible to maintain shadow aesthetic
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+        this.ctx.lineWidth = 1;
         this.ctx.lineCap = 'round';
         this.ctx.lineJoin = 'round';
 
         this.hands.forEach((landmarks) => {
-            // Draw hand skeleton
+            // Draw hand skeleton - very faint
             const connections = [
                 [0, 1], [1, 2], [2, 3], [3, 4], // Thumb
                 [0, 5], [5, 6], [6, 7], [7, 8], // Index
@@ -300,40 +299,20 @@ class ShadowPuppetApp {
                 this.ctx.stroke();
             });
 
-            // Draw landmark points
+            // Draw landmark points - very subtle
             landmarks.forEach((landmark) => {
-                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
                 this.ctx.beginPath();
                 this.ctx.arc(
                     landmark.x * this.canvas.width,
                     landmark.y * this.canvas.height,
-                    3,
+                    2,
                     0,
                     Math.PI * 2
                 );
                 this.ctx.fill();
             });
         });
-    }
-
-    updateLighting() {
-        // Adjust lighting based on hand activity
-        const targetIntensity = this.puppetManager.hasPuppets() ? 0.8 : 0.5;
-        this.lightingIntensity += (targetIntensity - this.lightingIntensity) * 0.05;
-    }
-
-    hslToRgb(h, s, l) {
-        s /= 100;
-        l /= 100;
-        const k = n => (n + h / 30) % 12;
-        const a = s * Math.min(l, 1 - l);
-        const f = n =>
-            l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
-        return [
-            Math.round(255 * f(0)),
-            Math.round(255 * f(8)),
-            Math.round(255 * f(4))
-        ];
     }
 
     resizeCanvas() {
