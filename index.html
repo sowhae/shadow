@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hand Tracking Shadow Puppets</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Main canvas for shadow puppets -->
+        <canvas id="puppetCanvas"></canvas>
+
+        <!-- Video element for webcam (hidden) -->
+        <video id="webcam" autoplay playsinline></video>
+
+        <!-- UI Overlay -->
+        <div class="ui-overlay">
+            <div class="gesture-indicator" id="gestureIndicator">
+                <span class="gesture-text">Waiting for hands...</span>
+            </div>
+
+            <div class="hand-status">
+                <div class="hand-info" id="leftHandInfo">
+                    <span class="hand-label">Left Hand</span>
+                    <span class="hand-state" id="leftHandState">-</span>
+                </div>
+                <div class="hand-info" id="rightHandInfo">
+                    <span class="hand-label">Right Hand</span>
+                    <span class="hand-state" id="rightHandState">-</span>
+                </div>
+            </div>
+
+            <div class="instructions">
+                <h3>Controls</h3>
+                <ul>
+                    <li>✋ Open Hand → Bird</li>
+                    <li>✊ Closed Fist → Dog</li>
+                    <li>🤏 Pinch → Rabbit</li>
+                    <li>👆 Swipe → Move puppet</li>
+                    <li>🤏 Pinch & Spread → Scale size</li>
+                    <li>🙌 Two Hands → Combined forms</li>
+                </ul>
+                <button id="toggleInstructions">Hide</button>
+            </div>
+        </div>
+
+        <!-- Loading indicator -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Initializing hand tracking...</p>
+        </div>
+    </div>
+
+    <script src="puppets.js"></script>
+    <script src="gestures.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
