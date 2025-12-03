@@ -16,6 +16,8 @@ class Puppet {
         this.opacity = 0;
         this.targetOpacity = 1;
         this.handedness = null; // 'Left' or 'Right'
+        this.gestureHoldTime = 0; // Track how long this type has been held
+        this.lastUpdateTime = Date.now();
     }
 
     update() {
@@ -25,6 +27,17 @@ class Puppet {
         this.y += (this.targetY - this.y) * smoothing;
         this.scale += (this.targetScale - this.scale) * smoothing;
         this.opacity += (this.targetOpacity - this.opacity) * smoothing;
+
+        // Track gesture hold time
+        const now = Date.now();
+        const deltaTime = (now - this.lastUpdateTime) / 1000; // Convert to seconds
+        this.gestureHoldTime += deltaTime;
+        this.lastUpdateTime = now;
+    }
+
+    resetHoldTime() {
+        this.gestureHoldTime = 0;
+        this.lastUpdateTime = Date.now();
     }
 
     draw(ctx) {
@@ -255,16 +268,549 @@ class Puppet {
     }
 }
 
+/**
+ * Animal Class
+ * Represents the actual animal that appears after holding a gesture
+ */
+class Animal {
+    constructor(type, x, y, scale = 1) {
+        this.type = type;
+        this.x = x;
+        this.y = y;
+        this.baseScale = scale;
+        this.scale = 0; // Start at 0 for spawn animation
+        this.opacity = 0;
+        this.rotation = 0;
+        this.bobOffset = 0;
+        this.bobSpeed = 2;
+        this.floatDirection = { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 };
+        this.targetOpacity = 1;
+        this.targetScale = this.baseScale;
+        this.isAppearing = true;
+        this.lifetime = 0;
+    }
+
+    update(deltaTime) {
+        // Spawn animation
+        if (this.isAppearing) {
+            this.scale += (this.targetScale - this.scale) * 0.1;
+            this.opacity += (this.targetOpacity - this.opacity) * 0.08;
+
+            if (Math.abs(this.scale - this.targetScale) < 0.01) {
+                this.isAppearing = false;
+            }
+        } else {
+            // Gentle floating animation
+            this.bobOffset += deltaTime * this.bobSpeed;
+            this.y += Math.sin(this.bobOffset) * 0.5;
+
+            // Slow drift
+            this.x += this.floatDirection.x * 0.3;
+            this.y += this.floatDirection.y * 0.2;
+
+            // Gentle rotation
+            this.rotation = Math.sin(this.bobOffset * 0.5) * 0.1;
+        }
+
+        this.lifetime += deltaTime;
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+        ctx.scale(this.scale, this.scale);
+        ctx.globalAlpha = this.opacity;
+
+        // Draw colorful, detailed animal
+        switch (this.type) {
+            case 'dog':
+                this.drawColorfulDog(ctx);
+                break;
+            case 'bird':
+                this.drawColorfulBird(ctx);
+                break;
+            case 'rabbit':
+                this.drawColorfulRabbit(ctx);
+                break;
+            case 'butterfly':
+                this.drawColorfulButterfly(ctx);
+                break;
+            case 'elephant':
+                this.drawColorfulElephant(ctx);
+                break;
+        }
+
+        ctx.restore();
+    }
+
+    drawColorfulDog(ctx) {
+        // Brown/golden dog
+        ctx.fillStyle = '#D2691E';
+
+        // Body
+        ctx.beginPath();
+        ctx.ellipse(0, 20, 60, 50, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Head
+        ctx.beginPath();
+        ctx.ellipse(0, -20, 50, 55, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Snout
+        ctx.fillStyle = '#CD853F';
+        ctx.beginPath();
+        ctx.ellipse(30, 0, 35, 30, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Ears
+        ctx.fillStyle = '#A0522D';
+        ctx.beginPath();
+        ctx.ellipse(-40, -40, 25, 45, -0.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.ellipse(15, -55, 25, 40, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Eyes
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(-15, -25, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(10, -25, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Eye shine
+        ctx.fillStyle = '#FFF';
+        ctx.beginPath();
+        ctx.arc(-13, -27, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(12, -27, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Nose
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(50, 0, 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Tail
+        ctx.strokeStyle = '#D2691E';
+        ctx.lineWidth = 8;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(-50, 30);
+        ctx.quadraticCurveTo(-70, 20, -65, 0);
+        ctx.stroke();
+    }
+
+    drawColorfulBird(ctx) {
+        // Blue/teal bird
+        ctx.fillStyle = '#1E90FF';
+
+        // Body
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 40, 50, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Head
+        ctx.fillStyle = '#4169E1';
+        ctx.beginPath();
+        ctx.ellipse(0, -40, 30, 30, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Wings
+        ctx.fillStyle = '#00BFFF';
+        ctx.beginPath();
+        ctx.moveTo(-20, -10);
+        ctx.quadraticCurveTo(-60, -20, -70, 0);
+        ctx.quadraticCurveTo(-60, 20, -30, 20);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(20, -10);
+        ctx.quadraticCurveTo(60, -20, 70, 0);
+        ctx.quadraticCurveTo(60, 20, 30, 20);
+        ctx.closePath();
+        ctx.fill();
+
+        // Wing details
+        ctx.strokeStyle = '#87CEEB';
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 3; i++) {
+            ctx.beginPath();
+            ctx.moveTo(-40 - i * 8, -5);
+            ctx.lineTo(-45 - i * 8, 15);
+            ctx.stroke();
+        }
+
+        // Beak
+        ctx.fillStyle = '#FFA500';
+        ctx.beginPath();
+        ctx.moveTo(15, -40);
+        ctx.lineTo(35, -38);
+        ctx.lineTo(15, -36);
+        ctx.closePath();
+        ctx.fill();
+
+        // Eye
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(8, -43, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#FFF';
+        ctx.beginPath();
+        ctx.arc(9, -44, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Tail feathers
+        ctx.fillStyle = '#4169E1';
+        ctx.beginPath();
+        ctx.moveTo(-10, 35);
+        ctx.lineTo(-15, 60);
+        ctx.lineTo(-5, 60);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(0, 40);
+        ctx.lineTo(-2, 65);
+        ctx.lineTo(2, 65);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(10, 35);
+        ctx.lineTo(5, 60);
+        ctx.lineTo(15, 60);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    drawColorfulRabbit(ctx) {
+        // White/pink rabbit
+        ctx.fillStyle = '#F5F5F5';
+
+        // Body
+        ctx.beginPath();
+        ctx.ellipse(0, 20, 50, 60, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Head
+        ctx.beginPath();
+        ctx.ellipse(0, -25, 45, 50, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Ears
+        ctx.beginPath();
+        ctx.ellipse(-20, -75, 18, 55, -0.1, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.ellipse(20, -75, 18, 55, 0.1, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Inner ears (pink)
+        ctx.fillStyle = '#FFB6C1';
+        ctx.beginPath();
+        ctx.ellipse(-20, -75, 8, 40, -0.1, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.ellipse(20, -75, 8, 40, 0.1, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Cheeks
+        ctx.fillStyle = '#F5F5F5';
+        ctx.beginPath();
+        ctx.ellipse(-30, -10, 20, 25, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.ellipse(30, -10, 20, 25, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Eyes
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(-15, -30, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(15, -30, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Eye shine
+        ctx.fillStyle = '#FFF';
+        ctx.beginPath();
+        ctx.arc(-13, -32, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(17, -32, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Nose
+        ctx.fillStyle = '#FFB6C1';
+        ctx.beginPath();
+        ctx.moveTo(0, -10);
+        ctx.lineTo(-5, -5);
+        ctx.lineTo(5, -5);
+        ctx.closePath();
+        ctx.fill();
+
+        // Whiskers
+        ctx.strokeStyle = '#888';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(-30, -15);
+        ctx.lineTo(-55, -18);
+        ctx.moveTo(-30, -10);
+        ctx.lineTo(-55, -10);
+        ctx.moveTo(30, -15);
+        ctx.lineTo(55, -18);
+        ctx.moveTo(30, -10);
+        ctx.lineTo(55, -10);
+        ctx.stroke();
+
+        // Fluffy tail
+        ctx.fillStyle = '#F5F5F5';
+        ctx.beginPath();
+        ctx.arc(-35, 40, 20, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    drawColorfulButterfly(ctx) {
+        // Colorful butterfly with gradients
+
+        // Body
+        ctx.fillStyle = '#333';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 8, 50, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Head
+        ctx.beginPath();
+        ctx.arc(0, -55, 10, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Upper wings - left (purple to pink)
+        const gradient1 = ctx.createRadialGradient(-50, -30, 10, -50, -30, 50);
+        gradient1.addColorStop(0, '#FF00FF');
+        gradient1.addColorStop(0.5, '#FF69B4');
+        gradient1.addColorStop(1, '#FFB6C1');
+
+        ctx.fillStyle = gradient1;
+        ctx.beginPath();
+        ctx.moveTo(-8, -30);
+        ctx.bezierCurveTo(-30, -60, -70, -65, -75, -35);
+        ctx.bezierCurveTo(-78, -15, -68, 0, -45, 0);
+        ctx.bezierCurveTo(-25, -5, -12, -15, -8, -25);
+        ctx.closePath();
+        ctx.fill();
+
+        // Upper wings - right (blue to cyan)
+        const gradient2 = ctx.createRadialGradient(50, -30, 10, 50, -30, 50);
+        gradient2.addColorStop(0, '#00BFFF');
+        gradient2.addColorStop(0.5, '#1E90FF');
+        gradient2.addColorStop(1, '#87CEEB');
+
+        ctx.fillStyle = gradient2;
+        ctx.beginPath();
+        ctx.moveTo(8, -30);
+        ctx.bezierCurveTo(30, -60, 70, -65, 75, -35);
+        ctx.bezierCurveTo(78, -15, 68, 0, 45, 0);
+        ctx.bezierCurveTo(25, -5, 12, -15, 8, -25);
+        ctx.closePath();
+        ctx.fill();
+
+        // Lower wings - left (orange to yellow)
+        const gradient3 = ctx.createRadialGradient(-40, 25, 10, -40, 25, 35);
+        gradient3.addColorStop(0, '#FFA500');
+        gradient3.addColorStop(0.5, '#FFD700');
+        gradient3.addColorStop(1, '#FFFF99');
+
+        ctx.fillStyle = gradient3;
+        ctx.beginPath();
+        ctx.moveTo(-8, 15);
+        ctx.bezierCurveTo(-28, 25, -52, 38, -58, 50);
+        ctx.bezierCurveTo(-58, 58, -48, 60, -38, 55);
+        ctx.bezierCurveTo(-22, 45, -12, 30, -8, 20);
+        ctx.closePath();
+        ctx.fill();
+
+        // Lower wings - right (green to lime)
+        const gradient4 = ctx.createRadialGradient(40, 25, 10, 40, 25, 35);
+        gradient4.addColorStop(0, '#32CD32');
+        gradient4.addColorStop(0.5, '#00FF00');
+        gradient4.addColorStop(1, '#90EE90');
+
+        ctx.fillStyle = gradient4;
+        ctx.beginPath();
+        ctx.moveTo(8, 15);
+        ctx.bezierCurveTo(28, 25, 52, 38, 58, 50);
+        ctx.bezierCurveTo(58, 58, 48, 60, 38, 55);
+        ctx.bezierCurveTo(22, 45, 12, 30, 8, 20);
+        ctx.closePath();
+        ctx.fill();
+
+        // Wing patterns (dots)
+        ctx.fillStyle = '#FFF';
+        ctx.beginPath();
+        ctx.arc(-55, -40, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(55, -40, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(-55, -40, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(55, -40, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Antennae
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, -65);
+        ctx.quadraticCurveTo(-15, -80, -18, -88);
+        ctx.moveTo(0, -65);
+        ctx.quadraticCurveTo(15, -80, 18, -88);
+        ctx.stroke();
+
+        ctx.fillStyle = '#FF00FF';
+        ctx.beginPath();
+        ctx.arc(-18, -88, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(18, -88, 3, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    drawColorfulElephant(ctx) {
+        // Gray elephant
+        ctx.fillStyle = '#A9A9A9';
+
+        // Body
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 90, 70, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Head
+        ctx.beginPath();
+        ctx.ellipse(0, -10, 70, 60, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Trunk
+        ctx.fillStyle = '#808080';
+        ctx.beginPath();
+        ctx.moveTo(45, 20);
+        ctx.bezierCurveTo(65, 50, 60, 85, 50, 110);
+        ctx.bezierCurveTo(40, 113, 32, 110, 35, 100);
+        ctx.bezierCurveTo(43, 80, 43, 50, 38, 20);
+        ctx.closePath();
+        ctx.fill();
+
+        // Trunk lines
+        ctx.strokeStyle = '#696969';
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 5; i++) {
+            ctx.beginPath();
+            ctx.arc(42, 30 + i * 15, 10, -Math.PI / 2, Math.PI / 2, false);
+            ctx.stroke();
+        }
+
+        // Ears
+        ctx.fillStyle = '#A9A9A9';
+        ctx.beginPath();
+        ctx.ellipse(-60, -10, 45, 60, -0.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.ellipse(60, -10, 45, 60, 0.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Inner ears (darker)
+        ctx.fillStyle = '#808080';
+        ctx.beginPath();
+        ctx.ellipse(-60, -5, 30, 45, -0.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.ellipse(60, -5, 30, 45, 0.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Eye
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(-15, -20, 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Eye shine
+        ctx.fillStyle = '#FFF';
+        ctx.beginPath();
+        ctx.arc(-13, -22, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Tusk
+        ctx.fillStyle = '#FFF';
+        ctx.beginPath();
+        ctx.moveTo(28, 15);
+        ctx.lineTo(38, 45);
+        ctx.lineTo(33, 45);
+        ctx.lineTo(23, 18);
+        ctx.closePath();
+        ctx.fill();
+
+        // Legs (visible part)
+        ctx.fillStyle = '#A9A9A9';
+        ctx.beginPath();
+        ctx.rect(-50, 55, 25, 40);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.rect(-20, 55, 25, 40);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.rect(10, 55, 25, 40);
+        ctx.fill();
+    }
+}
+
 class PuppetManager {
     constructor() {
         this.puppets = new Map(); // handedness -> Puppet
         this.combinedPuppet = null;
+        this.animals = new Map(); // handedness -> Animal
+        this.combinedAnimal = null;
+        this.summonThreshold = 2.5; // seconds to hold before animal appears
     }
 
     updatePuppet(handedness, type, x, y, scale, rotation) {
         if (this.puppets.has(handedness)) {
             const puppet = this.puppets.get(handedness);
-            puppet.type = type;
+            // If type changed, reset hold time
+            if (puppet.type !== type) {
+                puppet.type = type;
+                puppet.resetHoldTime();
+                // Remove existing animal when gesture changes
+                this.animals.delete(handedness);
+            }
             puppet.targetX = x;
             puppet.targetY = y;
             puppet.targetScale = scale;
@@ -308,21 +854,66 @@ class PuppetManager {
     }
 
     update() {
-        this.puppets.forEach(puppet => puppet.update());
+        const deltaTime = 1/60; // Approximate frame time
+
+        // Update puppets and check for animal summoning
+        this.puppets.forEach((puppet, handedness) => {
+            puppet.update();
+
+            // Check if gesture held long enough to summon animal
+            if (puppet.gestureHoldTime >= this.summonThreshold && !this.animals.has(handedness)) {
+                // Summon the animal!
+                const animal = new Animal(
+                    puppet.type,
+                    puppet.x,
+                    puppet.y,
+                    puppet.scale * 0.8
+                );
+                this.animals.set(handedness, animal);
+            }
+        });
+
+        // Update animals
+        this.animals.forEach(animal => animal.update(deltaTime));
+
+        // Update combined puppet and animal
         if (this.combinedPuppet) {
             this.combinedPuppet.update();
+
+            if (this.combinedPuppet.gestureHoldTime >= this.summonThreshold && !this.combinedAnimal) {
+                this.combinedAnimal = new Animal(
+                    this.combinedPuppet.type,
+                    this.combinedPuppet.x,
+                    this.combinedPuppet.y,
+                    this.combinedPuppet.scale * 0.7
+                );
+            }
+        }
+
+        if (this.combinedAnimal) {
+            this.combinedAnimal.update(deltaTime);
         }
     }
 
     draw(ctx) {
-        // Draw combined puppet if exists (it should be on top)
+        // Draw combined puppet/animal if exists
         if (this.combinedPuppet && this.combinedPuppet.opacity > 0.01) {
             this.combinedPuppet.draw(ctx);
+            if (this.combinedAnimal && this.combinedAnimal.opacity > 0.01) {
+                this.combinedAnimal.draw(ctx);
+            }
         } else {
             // Draw individual puppets
             this.puppets.forEach(puppet => {
                 if (puppet.opacity > 0.01) {
                     puppet.draw(ctx);
+                }
+            });
+
+            // Draw individual animals on top
+            this.animals.forEach(animal => {
+                if (animal.opacity > 0.01) {
+                    animal.draw(ctx);
                 }
             });
         }
