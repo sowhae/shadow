@@ -273,25 +273,32 @@ class Puppet {
  * Represents the actual animal that appears after holding a gesture
  */
 class Animal {
-    constructor(type, x, y, scale = 1) {
+    constructor(type, x, y, scale = 1, handedness = null) {
         this.type = type;
+        this.startX = x;
+        this.startY = y;
         this.x = x;
         this.y = y;
         this.baseScale = scale;
         this.scale = 0; // Start at 0 for spawn animation
         this.opacity = 0;
         this.rotation = 0;
-        this.bobOffset = 0;
-        this.bobSpeed = 2;
-        this.floatDirection = { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 };
+        this.bobOffset = Math.random() * Math.PI * 2; // Random start phase
+        this.bobSpeed = 1.5 + Math.random() * 0.5;
         this.targetOpacity = 1;
         this.targetScale = this.baseScale;
         this.isAppearing = true;
         this.lifetime = 0;
+        this.handedness = handedness;
+
+        // Movement pattern on the wall
+        this.moveSpeed = 15 + Math.random() * 10; // pixels per second
+        this.moveAngle = Math.random() * Math.PI * 2;
+        this.wallRadius = 200; // Stay within this radius
     }
 
     update(deltaTime) {
-        // Spawn animation
+        // Spawn animation - grow and fade in
         if (this.isAppearing) {
             this.scale += (this.targetScale - this.scale) * 0.1;
             this.opacity += (this.targetOpacity - this.opacity) * 0.08;
@@ -300,16 +307,19 @@ class Animal {
                 this.isAppearing = false;
             }
         } else {
-            // Gentle floating animation
+            // Move around on the wall in a circular/meandering pattern
             this.bobOffset += deltaTime * this.bobSpeed;
-            this.y += Math.sin(this.bobOffset) * 0.5;
 
-            // Slow drift
-            this.x += this.floatDirection.x * 0.3;
-            this.y += this.floatDirection.y * 0.2;
+            // Circular movement around starting position
+            const moveRadius = 50 + Math.sin(this.lifetime * 0.5) * 30;
+            this.x = this.startX + Math.cos(this.bobOffset * 0.8) * moveRadius;
+            this.y = this.startY + Math.sin(this.bobOffset * 0.8) * moveRadius;
 
-            // Gentle rotation
-            this.rotation = Math.sin(this.bobOffset * 0.5) * 0.1;
+            // Gentle bobbing animation
+            this.y += Math.sin(this.bobOffset * 2) * 2;
+
+            // Slight rotation
+            this.rotation = Math.sin(this.bobOffset * 0.7) * 0.08;
         }
 
         this.lifetime += deltaTime;
@@ -862,12 +872,13 @@ class PuppetManager {
 
             // Check if gesture held long enough to summon animal
             if (puppet.gestureHoldTime >= this.summonThreshold && !this.animals.has(handedness)) {
-                // Summon the animal!
+                // Summon the animal on the light wall (center of screen)!
                 const animal = new Animal(
                     puppet.type,
-                    puppet.x,
+                    puppet.x, // Start from puppet position
                     puppet.y,
-                    puppet.scale * 0.8
+                    puppet.scale * 0.8,
+                    handedness
                 );
                 this.animals.set(handedness, animal);
             }

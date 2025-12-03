@@ -16,34 +16,29 @@
         <!-- Video element for webcam (hidden) -->
         <video id="webcam" autoplay playsinline></video>
 
-        <!-- UI Overlay -->
+        <!-- UI Overlay - Minimal -->
         <div class="ui-overlay">
-            <div class="gesture-indicator" id="gestureIndicator">
-                <span class="gesture-text">Waiting for hands...</span>
-            </div>
+            <!-- Help button -->
+            <button class="help-button" id="helpButton">?</button>
 
-            <div class="hand-status">
-                <div class="hand-info" id="leftHandInfo">
-                    <span class="hand-label">Left Hand</span>
-                    <span class="hand-state" id="leftHandState">-</span>
+            <!-- Help panel (hidden by default) -->
+            <div class="help-panel hidden" id="helpPanel">
+                <button class="close-button" id="closeButton">×</button>
+                <h3>Shadow Puppets</h3>
+                <div class="help-content">
+                    <p><strong>Make hand shapes:</strong></p>
+                    <ul>
+                        <li>✋ Open Hand → Bird</li>
+                        <li>✊ Fist → Dog</li>
+                        <li>🤏 Pinch → Rabbit</li>
+                    </ul>
+                    <p><strong>Two hands:</strong></p>
+                    <ul>
+                        <li>🙌 Both Open → Butterfly</li>
+                        <li>✊✊ Both Fists → Elephant</li>
+                    </ul>
+                    <p class="tip">Hold a gesture for 2 seconds to summon the animal!</p>
                 </div>
-                <div class="hand-info" id="rightHandInfo">
-                    <span class="hand-label">Right Hand</span>
-                    <span class="hand-state" id="rightHandState">-</span>
-                </div>
-            </div>
-
-            <div class="instructions">
-                <h3>Controls</h3>
-                <ul>
-                    <li>✋ Open Hand → Bird</li>
-                    <li>✊ Closed Fist → Dog</li>
-                    <li>🤏 Pinch → Rabbit</li>
-                    <li>👆 Swipe → Move puppet</li>
-                    <li>🤏 Pinch & Spread → Scale size</li>
-                    <li>🙌 Two Hands → Combined forms</li>
-                </ul>
-                <button id="toggleInstructions">Hide</button>
             </div>
         </div>
 

@@ -19,9 +19,6 @@ class ShadowPuppetApp {
 
         // UI elements
         this.loadingEl = document.getElementById('loading');
-        this.gestureIndicator = document.getElementById('gestureIndicator');
-        this.leftHandState = document.getElementById('leftHandState');
-        this.rightHandState = document.getElementById('rightHandState');
 
         // Hand tracking state
         this.hands = new Map(); // handedness -> landmarks
@@ -101,9 +98,6 @@ class ShadowPuppetApp {
 
                 // Recognize gesture
                 const gesture = this.gestureRecognizer.recognizeGesture(landmarks, handedness);
-
-                // Update UI
-                this.updateHandStatus(handedness, gesture);
             }
         }
 
@@ -118,7 +112,6 @@ class ShadowPuppetApp {
         if (twoHandGesture) {
             // Create combined puppet
             this.createCombinedPuppet(twoHandGesture);
-            this.updateGestureIndicator(`🦋 ${twoHandGesture.type.toUpperCase()} (Two Hands)`);
         } else {
             // Remove combined puppet if it exists
             this.puppetManager.removeCombinedPuppet();
@@ -130,9 +123,6 @@ class ShadowPuppetApp {
                     this.updatePuppet(handedness, gesture);
                 }
             });
-
-            // Update gesture indicator
-            this.updateGestureIndicatorFromHands();
         }
 
         // Clean up hands that haven't been updated
@@ -185,39 +175,6 @@ class ShadowPuppetApp {
         this.lastHandUpdate.delete(handedness);
         this.gestureRecognizer.clearHand(handedness);
         this.puppetManager.removePuppet(handedness);
-        this.updateHandStatus(handedness, null);
-    }
-
-    updateHandStatus(handedness, gesture) {
-        const stateEl = handedness === 'Left' ? this.leftHandState : this.rightHandState;
-        if (gesture) {
-            const emoji = gesture.type === 'bird' ? '🐦' :
-                         gesture.type === 'dog' ? '🐕' :
-                         gesture.type === 'rabbit' ? '🐰' : '❓';
-            stateEl.textContent = `${emoji} ${gesture.type}`;
-        } else {
-            stateEl.textContent = '-';
-        }
-    }
-
-    updateGestureIndicator(text) {
-        const gestureText = this.gestureIndicator.querySelector('.gesture-text');
-        gestureText.textContent = text;
-    }
-
-    updateGestureIndicatorFromHands() {
-        if (this.hands.size === 0) {
-            this.updateGestureIndicator('Waiting for hands...');
-        } else if (this.hands.size === 1) {
-            const handedness = Array.from(this.hands.keys())[0];
-            const gesture = this.gestureRecognizer.getGesture(handedness);
-            if (gesture) {
-                const desc = this.gestureRecognizer.getGestureDescription(handedness);
-                this.updateGestureIndicator(desc);
-            }
-        } else {
-            this.updateGestureIndicator('Two hands detected - try combining!');
-        }
     }
 
     animate() {
@@ -323,12 +280,16 @@ class ShadowPuppetApp {
     setupEventListeners() {
         window.addEventListener('resize', () => this.resizeCanvas());
 
-        const toggleBtn = document.getElementById('toggleInstructions');
-        const instructions = document.querySelector('.instructions');
+        const helpButton = document.getElementById('helpButton');
+        const helpPanel = document.getElementById('helpPanel');
+        const closeButton = document.getElementById('closeButton');
 
-        toggleBtn.addEventListener('click', () => {
-            instructions.classList.toggle('hidden');
-            toggleBtn.textContent = instructions.classList.contains('hidden') ? 'Show' : 'Hide';
+        helpButton.addEventListener('click', () => {
+            helpPanel.classList.remove('hidden');
+        });
+
+        closeButton.addEventListener('click', () => {
+            helpPanel.classList.add('hidden');
         });
     }
 

@@ -47,115 +47,118 @@ body {
     z-index: 10;
 }
 
-/* Gesture Indicator */
-.gesture-indicator {
-    position: absolute;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.7);
-    padding: 15px 30px;
-    border-radius: 30px;
-    backdrop-filter: blur(10px);
-    pointer-events: auto;
-}
-
-.gesture-text {
-    color: #fff;
-    font-size: 18px;
-    font-weight: 600;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-/* Hand Status */
-.hand-status {
+/* Help Button */
+.help-button {
     position: absolute;
     top: 20px;
     right: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.hand-info {
-    background: rgba(0, 0, 0, 0.6);
-    padding: 10px 20px;
-    border-radius: 20px;
-    backdrop-filter: blur(10px);
-    display: flex;
-    gap: 15px;
-    align-items: center;
-}
-
-.hand-label {
-    color: #aaa;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.hand-state {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.3);
     color: #fff;
-    font-size: 14px;
-    font-weight: 600;
-    min-width: 60px;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    pointer-events: auto;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* Instructions */
-.instructions {
+.help-button:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.1);
+}
+
+/* Help Panel */
+.help-panel {
     position: absolute;
-    bottom: 20px;
-    left: 20px;
-    background: rgba(0, 0, 0, 0.8);
-    padding: 20px;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 15px;
-    backdrop-filter: blur(10px);
-    max-width: 280px;
+    padding: 25px;
+    max-width: 300px;
+    backdrop-filter: blur(15px);
     pointer-events: auto;
     transition: all 0.3s ease;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 
-.instructions.hidden {
-    transform: translateY(calc(100% + 20px));
+.help-panel.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-10px);
 }
 
-.instructions h3 {
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
     color: #fff;
-    margin-bottom: 15px;
-    font-size: 16px;
+    font-size: 24px;
+    line-height: 1;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.instructions ul {
-    list-style: none;
-    margin-bottom: 15px;
+.close-button:hover {
+    background: rgba(255, 255, 255, 0.2);
 }
 
-.instructions li {
+.help-panel h3 {
+    color: #fff;
+    margin: 0 0 15px 0;
+    font-size: 18px;
+}
+
+.help-content {
     color: #ddd;
+}
+
+.help-content p {
+    margin: 10px 0 5px 0;
     font-size: 13px;
+}
+
+.help-content strong {
+    color: #fff;
+}
+
+.help-content ul {
+    list-style: none;
+    margin: 5px 0 15px 0;
+    padding: 0;
+}
+
+.help-content li {
     padding: 5px 0;
+    font-size: 13px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.instructions li:last-child {
+.help-content li:last-child {
     border-bottom: none;
 }
 
-#toggleInstructions {
-    width: 100%;
-    padding: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    cursor: pointer;
+.help-content .tip {
+    margin-top: 15px;
+    padding: 10px;
+    background: rgba(255, 200, 100, 0.15);
+    border-left: 3px solid rgba(255, 200, 100, 0.5);
+    border-radius: 5px;
     font-size: 12px;
-    transition: all 0.2s ease;
-    pointer-events: auto;
-}
-
-#toggleInstructions:hover {
-    background: rgba(255, 255, 255, 0.2);
+    color: #ffd700;
 }
 
 /* Loading */
