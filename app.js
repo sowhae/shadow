@@ -191,7 +191,7 @@ class ShadowPuppetApp {
 
         // Update and draw puppets
         this.puppetManager.update();
-        this.puppetManager.draw(this.ctx);
+        this.puppetManager.draw(this.ctx, this.canvas.width, this.canvas.height);
 
         requestAnimationFrame(() => this.animate());
     }

@@ -273,28 +273,60 @@ class Puppet {
  * Represents the actual animal that appears after holding a gesture
  */
 class Animal {
-    constructor(type, x, y, scale = 1, handedness = null) {
+    constructor(type, handedness = null) {
         this.type = type;
-        this.startX = x;
-        this.startY = y;
-        this.x = x;
-        this.y = y;
-        this.baseScale = scale;
+        this.handedness = handedness;
+
+        // Will be positioned in center on first draw
+        this.x = 0;
+        this.y = 0;
+        this.initialized = false;
+
+        this.baseScale = 1.2;
         this.scale = 0; // Start at 0 for spawn animation
         this.opacity = 0;
         this.rotation = 0;
-        this.bobOffset = Math.random() * Math.PI * 2; // Random start phase
-        this.bobSpeed = 1.5 + Math.random() * 0.5;
         this.targetOpacity = 1;
         this.targetScale = this.baseScale;
         this.isAppearing = true;
         this.lifetime = 0;
-        this.handedness = handedness;
 
-        // Movement pattern on the wall
-        this.moveSpeed = 15 + Math.random() * 10; // pixels per second
-        this.moveAngle = Math.random() * Math.PI * 2;
-        this.wallRadius = 200; // Stay within this radius
+        // Animation state
+        this.animationPhase = 0;
+        this.direction = Math.random() < 0.5 ? -1 : 1; // Random direction
+
+        // Animal-specific movement
+        this.setupAnimalMovement();
+    }
+
+    setupAnimalMovement() {
+        switch (this.type) {
+            case 'rabbit':
+                this.hopHeight = 40;
+                this.hopSpeed = 3;
+                this.moveSpeed = 80;
+                this.nextHop = 0;
+                break;
+            case 'bird':
+                this.flapSpeed = 8;
+                this.flySpeed = 60;
+                this.waveAmplitude = 30;
+                break;
+            case 'dog':
+                this.runSpeed = 50;
+                this.bobAmount = 10;
+                this.bobSpeed = 10;
+                break;
+            case 'butterfly':
+                this.flutterSpeed = 6;
+                this.driftSpeed = 40;
+                this.waveAmplitude = 50;
+                break;
+            case 'elephant':
+                this.walkSpeed = 30;
+                this.trunkSwing = 0.15;
+                break;
+        }
     }
 
     update(deltaTime) {
@@ -307,25 +339,97 @@ class Animal {
                 this.isAppearing = false;
             }
         } else {
-            // Move around on the wall in a circular/meandering pattern
-            this.bobOffset += deltaTime * this.bobSpeed;
+            // Animal-specific animations
+            this.animationPhase += deltaTime;
 
-            // Circular movement around starting position
-            const moveRadius = 50 + Math.sin(this.lifetime * 0.5) * 30;
-            this.x = this.startX + Math.cos(this.bobOffset * 0.8) * moveRadius;
-            this.y = this.startY + Math.sin(this.bobOffset * 0.8) * moveRadius;
-
-            // Gentle bobbing animation
-            this.y += Math.sin(this.bobOffset * 2) * 2;
-
-            // Slight rotation
-            this.rotation = Math.sin(this.bobOffset * 0.7) * 0.08;
+            switch (this.type) {
+                case 'rabbit':
+                    this.updateRabbitHop(deltaTime);
+                    break;
+                case 'bird':
+                    this.updateBirdFly(deltaTime);
+                    break;
+                case 'dog':
+                    this.updateDogRun(deltaTime);
+                    break;
+                case 'butterfly':
+                    this.updateButterflyFlutter(deltaTime);
+                    break;
+                case 'elephant':
+                    this.updateElephantWalk(deltaTime);
+                    break;
+            }
         }
 
         this.lifetime += deltaTime;
     }
 
-    draw(ctx) {
+    updateRabbitHop(deltaTime) {
+        // Hop across the screen
+        this.x += this.direction * this.moveSpeed * deltaTime;
+
+        // Hopping animation
+        if (this.animationPhase > this.nextHop) {
+            this.nextHop = this.animationPhase + 0.5; // Hop every 0.5 seconds
+        }
+
+        const timeSinceLastHop = this.nextHop - this.animationPhase;
+        if (timeSinceLastHop < 0.3) {
+            // Arc motion
+            const hopProgress = (0.3 - timeSinceLastHop) / 0.3;
+            this.y -= Math.sin(hopProgress * Math.PI) * this.hopHeight;
+        }
+
+        this.rotation = this.direction > 0 ? 0 : Math.PI;
+    }
+
+    updateBirdFly(deltaTime) {
+        // Fly across with wave motion
+        this.x += this.direction * this.flySpeed * deltaTime;
+        this.y += Math.sin(this.animationPhase * 2) * this.waveAmplitude * deltaTime;
+
+        // Wing flap rotation
+        this.rotation = Math.sin(this.animationPhase * this.flapSpeed) * 0.2;
+    }
+
+    updateDogRun(deltaTime) {
+        // Run across the screen
+        this.x += this.direction * this.runSpeed * deltaTime;
+
+        // Bobbing while running
+        this.y += Math.sin(this.animationPhase * this.bobSpeed) * this.bobAmount * deltaTime;
+
+        this.rotation = this.direction > 0 ? 0 : Math.PI;
+    }
+
+    updateButterflyFlutter(deltaTime) {
+        // Flutter in a wavy pattern
+        this.x += this.direction * this.driftSpeed * deltaTime;
+        this.y += Math.sin(this.animationPhase * 3) * this.waveAmplitude * deltaTime;
+
+        // Gentle rotation as it flies
+        this.rotation = Math.sin(this.animationPhase * this.flutterSpeed) * 0.15;
+    }
+
+    updateElephantWalk(deltaTime) {
+        // Slow walk across screen
+        this.x += this.direction * this.walkSpeed * deltaTime;
+
+        // Slight bobbing
+        this.y += Math.sin(this.animationPhase * 4) * 5 * deltaTime;
+
+        // Trunk swing handled in draw
+        this.rotation = this.direction > 0 ? 0 : Math.PI;
+    }
+
+    draw(ctx, canvasWidth, canvasHeight) {
+        // Initialize position on first draw (spawn in center)
+        if (!this.initialized && canvasWidth && canvasHeight) {
+            this.x = canvasWidth / 2;
+            this.y = canvasHeight / 2;
+            this.initialized = true;
+        }
+
         ctx.save();
         ctx.translate(this.x, this.y);
         ctx.rotate(this.rotation);
@@ -873,11 +977,9 @@ class PuppetManager {
             // Check if gesture held long enough to summon animal
             if (puppet.gestureHoldTime >= this.summonThreshold && !this.animals.has(handedness)) {
                 // Summon the animal on the light wall (center of screen)!
+                // Need to pass canvas dimensions to position in center
                 const animal = new Animal(
                     puppet.type,
-                    puppet.x, // Start from puppet position
-                    puppet.y,
-                    puppet.scale * 0.8,
                     handedness
                 );
                 this.animals.set(handedness, animal);
@@ -894,9 +996,7 @@ class PuppetManager {
             if (this.combinedPuppet.gestureHoldTime >= this.summonThreshold && !this.combinedAnimal) {
                 this.combinedAnimal = new Animal(
                     this.combinedPuppet.type,
-                    this.combinedPuppet.x,
-                    this.combinedPuppet.y,
-                    this.combinedPuppet.scale * 0.7
+                    'Combined'
                 );
             }
         }
@@ -906,12 +1006,12 @@ class PuppetManager {
         }
     }
 
-    draw(ctx) {
+    draw(ctx, canvasWidth, canvasHeight) {
         // Draw combined puppet/animal if exists
         if (this.combinedPuppet && this.combinedPuppet.opacity > 0.01) {
             this.combinedPuppet.draw(ctx);
             if (this.combinedAnimal && this.combinedAnimal.opacity > 0.01) {
-                this.combinedAnimal.draw(ctx);
+                this.combinedAnimal.draw(ctx, canvasWidth, canvasHeight);
             }
         } else {
             // Draw individual puppets
@@ -924,7 +1024,7 @@ class PuppetManager {
             // Draw individual animals on top
             this.animals.forEach(animal => {
                 if (animal.opacity > 0.01) {
-                    animal.draw(ctx);
+                    animal.draw(ctx, canvasWidth, canvasHeight);
                 }
             });
         }
